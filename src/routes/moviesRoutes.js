@@ -5,7 +5,7 @@ const moviesController = require('../controllers/moviesController');
 router.get('/movies', moviesController.list);
 router.get('/movies/new', moviesController.new);
 router.get('/movies/recommended', moviesController.recomended);
-router.get('/movies/detail/:id', moviesController.detail);
+router.get('/movies/:id', moviesController.detail);
 //Rutas exigidas para la creación del CRUD
 router.get('/movies/add', moviesController.add);
 router.post('/movies/create', moviesController.create);
