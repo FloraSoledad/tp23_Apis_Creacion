@@ -55,16 +55,17 @@ list: async (req, res) => {
     });
     }
 },
+/* ejemplo la ruta recomendada en New request http://localhost:3001/movies/100 */
 detail: async (req, res) => {
         let error;
 
     try {
 
         if (isNaN(req.params.id)){
-            error = new Error ('Upps, la pelicula no esxiste')
-            error.status = 403;
+            error = new Error ('El ID debe ser un numero')
+            error.status = 404;
             throw error;
-        }
+        }  
         
         let movie = await db.Movie.findByPk(req.params.id, {
             include : [{
@@ -92,15 +93,15 @@ detail: async (req, res) => {
     });
     }
 },
-new: async (req, res) => {
+newest: async (req, res) => {
 
 try {
     let movies = await db.Movie.findAll({
         order: [["release_date", "DESC"]],
-        limit: req.query.limit || 5
+        limit: +req.query.limit || 5
     });
 
-    if (movie.length) { 
+    if (movies.length) { 
         return res.status(200).json({
         ok: true,
         meta: {
@@ -122,17 +123,39 @@ try {
          });
     }
 },
-recomended: (req, res) => {
-    db.Movie.findAll({
-    include: ["genre"],
-    where: {
-        rating: { [db.Sequelize.Op.gte]: 8 },
+
+/* la ruta recomendada es http://localhost:3001/movies/recommended */
+recomended: async(req, res) => {
+    let error;
+    try{
+       let movies = await  db.Movie.findAll({
+            include: ["genre"],
+            limit : +req.query.limit || 5,
+            order: [["rating", "DESC"]],
+            })
+            if (movies.length) { 
+                return res.status(200).json({
+                ok: true,
+                meta: {
+                    total: movies.length
+                },
+                data: movies
+                });
+            };
+        
+            error = new Error ('Upps, no hay peliculas')
+            error.status = 403;
+            throw error;
+
+    } catch (error) {
+        console.log(error);
+        return res.status(error.status || 500).json({
+            ok: false,
+            msg: error.message ? error.message: "Comuniquese con el administrador de sitio"
+             });
+        }
     },
-    order: [["rating", "DESC"]],
-    }).then((movies) => {
-    res.render("recommendedMovies.ejs", { movies });
-    });
-},
+
 //Aqui dispongo las rutas para trabajar con el CRUD
 add: function (req, res) {
     let promGenres = Genres.findAll();
@@ -147,19 +170,27 @@ add: function (req, res) {
     })
     .catch((error) => res.send(error));
 },
-create: function (req, res) {
-    Movies.create({
-    title: req.body.title,
-    rating: req.body.rating,
-    awards: req.body.awards,
-    release_date: req.body.release_date,
-    length: req.body.length,
-    genre_id: req.body.genre_id,
-    })
-    .then(() => {
-        return res.redirect("/movies");
-    })
-    .catch((error) => res.send(error));
+create:  async (req, res) => {
+    const { title, rating, awards, release_date, length, genre_id} = req.body;
+
+    try {
+        let newMovie = db.Movies.create(
+            {
+                title: title && title,
+                rating: rating,
+                awards: awards,
+                release_date: release_date,
+                length: length,
+                genre_id: genre_id,
+            }
+        )
+
+
+    } catch (error) {
+
+    }
+    
+
 },
 edit: function (req, res) {
     let movieId = req.params.id;
