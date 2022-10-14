@@ -171,12 +171,12 @@ add: function (req, res) {
     .catch((error) => res.send(error));
 },
 create:  async (req, res) => {
-    const { title, rating, awards, release_date, length, genre_id} = req.body;
+    const {title, rating, awards, release_date, length, genre_id} = req.body;
 
     try {
-        let newMovie = db.Movies.create(
+        let newMovie = await db.Movie.create(
             {
-                title: title && title,
+                title: title && title.trim(),
                 rating: rating,
                 awards: awards,
                 release_date: release_date,
@@ -184,6 +184,16 @@ create:  async (req, res) => {
                 genre_id: genre_id,
             }
         )
+        if (newMovie) { 
+            return res.status(200).json({
+            ok: true,
+            meta: {
+                total: 1,
+                url : `${req.protocolo}:// ${req.get('host')}/movies/${newMovie.id}`
+            },
+            data: newMovie
+            });
+        };
 
 
     } catch (error) {
