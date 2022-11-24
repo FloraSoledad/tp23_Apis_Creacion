@@ -8,7 +8,7 @@ const genresController = {
       let { order = 'id'} = req.query;
       let orders = ["id","name", "ranking"];
 
-      if (orders.includes(order)) {
+      if (!orders.includes(order)){
         order = order ? order : 'id';
       } else {
         throw new Error(`El campo ${order} no existe!. Campos admitidos: [name, ranking]`)
