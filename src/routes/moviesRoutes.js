@@ -11,5 +11,6 @@ router
         .get('/movies', create)
         .put('/movies/:id', update) 
         .delete('/movies/:id', destroy)
+        .post('/movies',create)
 
 module.exports = router;
